@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { Button } from "./components/button";
 
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null!);
@@ -48,6 +49,15 @@ function App() {
     contextRef.current?.stroke();
   };
 
+  const clearCanvas = () => {
+    contextRef.current?.clearRect(
+      0,
+      0,
+      canvasRef.current.width,
+      canvasRef.current.height
+    );
+  };
+
   return (
     <div className="bg-gray-200 pr-8 pl-8 pt-8 h-screen">
       <canvas
@@ -57,9 +67,20 @@ function App() {
         onMouseUp={finishDrawing}
         onMouseMove={draw}
       ></canvas>
-      <div className="" ref={toolRef}>
-        <button>undo</button>
-        <button>clear</button>
+      <div className="pt-8 flex gap-40" ref={toolRef}>
+        <div className="flex gap-4">
+          <Button type="button" label="undo" />
+          <Button type="button" onClick={clearCanvas} label="clear" />
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button className="bg-black w-8 h-8 rounded-full shadow-md"></button>
+          <button className="bg-white w-8 h-8 rounded-full shadow-md"></button>
+          <button className="bg-red-500 w-8 h-8 rounded-full shadow-md"></button>
+          <button className="bg-blue-500 w-8 h-8 rounded-full shadow-md"></button>
+          <button className="bg-yellow-500 w-8 h-8 rounded-full shadow-md"></button>
+          <button className="bg-green-500 w-8 h-8 rounded-full shadow-md"></button>
+        </div>
       </div>
     </div>
   );

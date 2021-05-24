@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "./components/button";
 
 function App() {
@@ -6,6 +6,8 @@ function App() {
   const contextRef = useRef<CanvasRenderingContext2D>();
   const toolRef = useRef<HTMLDivElement>(null!);
   const [isDrawing, setIsDrawing] = useState(false);
+  const [drawStore, setDrawStore] = useState<ImageData[]>([]);
+  const [drawIndex, setDrawIndex] = useState(-1);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -35,8 +37,22 @@ function App() {
   };
 
   const finishDrawing = () => {
+    if (!contextRef.current) return;
+
     contextRef.current?.closePath();
     setIsDrawing(false);
+    const newDrawDate = [
+      ...drawStore,
+      contextRef.current.getImageData(
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height
+      ),
+    ];
+    setDrawStore(newDrawDate);
+    setDrawIndex((prev) => prev + 1);
+    console.log(drawStore, drawIndex);
   };
 
   const draw = ({
@@ -49,13 +65,38 @@ function App() {
     contextRef.current?.stroke();
   };
 
-  const clearCanvas = () => {
+  const clearDraw = () => {
     contextRef.current?.clearRect(
       0,
       0,
       canvasRef.current.width,
       canvasRef.current.height
     );
+
+    setDrawStore([]);
+    setDrawIndex(-1);
+  };
+  const undoDraw = () => {
+    if (!contextRef.current) return;
+    if (drawIndex <= 0) {
+      return clearDraw();
+    }
+
+    const newIndex = drawIndex - 1;
+    const undoDrawDate = drawStore.slice(0, -1);
+    setDrawIndex(newIndex);
+    setDrawStore(undoDrawDate);
+    contextRef.current?.putImageData(undoDrawDate[newIndex], 0, 0);
+  };
+
+  const selectColor = useCallback((color: string) => {
+    if (!contextRef.current) return;
+    contextRef.current.strokeStyle = color;
+  }, []);
+
+  const changeDrawWidth = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!contextRef.current) return;
+    contextRef.current.lineWidth = parseInt(event.target.value);
   };
 
   return (
@@ -69,18 +110,37 @@ function App() {
       ></canvas>
       <div className="pt-8 flex gap-40" ref={toolRef}>
         <div className="flex gap-4">
-          <Button type="button" label="undo" />
-          <Button type="button" onClick={clearCanvas} label="clear" />
+          <Button type="button" onClick={undoDraw} label="undo" />
+          <Button type="button" onClick={clearDraw} label="clear" />
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="bg-black w-8 h-8 rounded-full shadow-md"></button>
-          <button className="bg-white w-8 h-8 rounded-full shadow-md"></button>
-          <button className="bg-red-500 w-8 h-8 rounded-full shadow-md"></button>
-          <button className="bg-blue-500 w-8 h-8 rounded-full shadow-md"></button>
-          <button className="bg-yellow-500 w-8 h-8 rounded-full shadow-md"></button>
-          <button className="bg-green-500 w-8 h-8 rounded-full shadow-md"></button>
+          <button
+            className="bg-black w-8 h-8 rounded-full shadow-md"
+            onClick={() => selectColor("black")}
+          ></button>
+          <button
+            className="bg-white w-8 h-8 rounded-full shadow-md"
+            onClick={() => selectColor("white")}
+          ></button>
+          <button
+            className="bg-red-500 w-8 h-8 rounded-full shadow-md"
+            onClick={() => selectColor("red")}
+          ></button>
+          <button
+            className="bg-blue-500 w-8 h-8 rounded-full shadow-md"
+            onClick={() => selectColor("blue")}
+          ></button>
+          <button
+            className="bg-yellow-500 w-8 h-8 rounded-full shadow-md"
+            onClick={() => selectColor("yellow")}
+          ></button>
+          <button
+            className="bg-green-500 w-8 h-8 rounded-full shadow-md"
+            onClick={() => selectColor("green")}
+          ></button>
         </div>
+        <input type="range" min={1} max={100} onChange={changeDrawWidth} />
       </div>
     </div>
   );

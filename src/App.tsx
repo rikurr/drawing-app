@@ -4,16 +4,16 @@ import { Button } from "./components/button";
 function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null!);
   const contextRef = useRef<CanvasRenderingContext2D>();
-  const toolRef = useRef<HTMLDivElement>(null!);
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawStore, setDrawStore] = useState<ImageData[]>([]);
   const [drawIndex, setDrawIndex] = useState(-1);
 
   useEffect(() => {
     const canvas = canvasRef.current;
+
+    // Retina対応
     canvas.width = (window.innerWidth - 64) * 2;
     canvas.height = (window.innerHeight / 1.5) * 2;
-
     canvas.style.width = `${window.innerWidth - 64}px`;
     canvas.style.height = `${window.innerHeight / 1.5}`;
 
@@ -52,7 +52,6 @@ function App() {
     ];
     setDrawStore(newDrawDate);
     setDrawIndex((prev) => prev + 1);
-    console.log(drawStore, drawIndex);
   };
 
   const draw = ({
@@ -108,7 +107,7 @@ function App() {
         onMouseUp={finishDrawing}
         onMouseMove={draw}
       ></canvas>
-      <div className="pt-8 flex gap-40" ref={toolRef}>
+      <div className="pt-8 flex gap-40">
         <div className="flex gap-4">
           <Button type="button" onClick={undoDraw} label="undo" />
           <Button type="button" onClick={clearDraw} label="clear" />
